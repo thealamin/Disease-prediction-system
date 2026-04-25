@@ -1,0 +1,11 @@
+# Core ML
+pandas==2.2.2
+scikit-learn==1.5.0
+numpy==1.26.4
+
+# API
+fastapi==0.111.0
+uvicorn==0.30.1
+
+# Frontend (added later)
+# react is installed via npm separately

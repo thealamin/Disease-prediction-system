@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>লক্ষণ বিশ্লেষক</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #f0f4f8;
+      --card:       #ffffff;
+      --border:     #d1dbe6;
+      --text:       #0f1923;
+      --muted:      #5a6a7a;
+      --primary:    #006a4e;
+      --primary-lt: #e6f4f0;
+      --primary-bd: #b2d8ce;
+      --red:        #c0392b;
+      --red-lt:     #fdecea;
+      --amber:      #9a6200;
+      --amber-lt:   #fff8e6;
+      --amber-bd:   #f5d78e;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Hind Siliguri', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    body.en { font-family: 'Inter', sans-serif; }
+
+    header {
+      background: var(--primary);
+      padding: 18px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 42px; height: 42px; background: rgba(255,255,255,0.18);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+    }
+    .brand-name { color: #fff; font-size: 1.2rem; font-weight: 600; }
+    .brand-sub  { color: rgba(255,255,255,0.72); font-size: 0.83rem; }
+
+    .lang-toggle {
+      display: flex; background: rgba(255,255,255,0.15);
+      border-radius: 8px; padding: 3px; gap: 2px;
+    }
+    .lang-btn {
+      padding: 7px 18px; border: none; border-radius: 6px;
+      font-size: 0.92rem; font-weight: 500; cursor: pointer;
+      background: transparent; color: rgba(255,255,255,0.75);
+      font-family: inherit; transition: background .18s, color .18s;
+    }
+    .lang-btn.active { background: #fff; color: var(--primary); }
+
+    .container { max-width: 680px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    .intro {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 24px 28px; margin-bottom: 20px;
+    }
+    .intro h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 8px; }
+    .intro p  { font-size: 0.97rem; color: var(--muted); line-height: 1.75; }
+
+    .card {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 24px 28px; margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 1rem; font-weight: 600; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px; color: var(--text);
+    }
+
+    .search-wrap { position: relative; }
+    .search-wrap input {
+      width: 100%; padding: 14px 16px 14px 46px;
+      border: 2px solid var(--border); border-radius: 12px;
+      font-family: inherit; font-size: 1rem; color: var(--text);
+      background: var(--bg); outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-wrap input:focus {
+      border-color: var(--primary); background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,106,78,0.1);
+    }
+    .search-wrap input::placeholder { color: var(--muted); }
+    .s-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; }
+
+    .dropdown {
+      display: none; background: var(--card);
+      border: 2px solid var(--primary); border-top: none;
+      border-radius: 0 0 12px 12px; max-height: 220px; overflow-y: auto;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.09);
+    }
+    .dropdown.open { display: block; }
+    .dropdown-item {
+      padding: 13px 16px; cursor: pointer; font-size: 0.97rem; font-family: inherit;
+      color: var(--text); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; transition: background .12s;
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { background: var(--primary-lt); color: var(--primary); }
+    .d-plus {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--primary-lt); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; min-height: 32px; margin-top: 14px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 10px 7px 14px;
+      background: var(--primary-lt); border: 1.5px solid var(--primary-bd);
+      border-radius: 999px; font-size: 0.92rem; font-weight: 500;
+      color: var(--primary); font-family: inherit;
+      animation: pop .2s ease;
+    }
+    .chip-x {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--primary); color: #fff; border: none;
+      cursor: pointer; font-size: 0.8rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .chip-x:hover { background: var(--red); }
+    .empty-msg { color: var(--muted); font-size: 0.92rem; font-family: inherit; }
+    @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .analyse-btn {
+      width: 100%; padding: 16px;
+      background: var(--primary); color: #fff; border: none; border-radius: 12px;
+      font-family: inherit; font-size: 1.05rem; font-weight: 600;
+      cursor: pointer; margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: opacity .2s, transform .15s;
+    }
+    .analyse-btn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .analyse-btn:disabled { opacity: .38; cursor: not-allowed; transform: none; }
+    .spinner {
+      display: none; width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    .loading .spinner { display: block; }
+    .loading .btn-text { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result-section { display: none; animation: fadeUp .35s ease; }
+    @keyframes fadeUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .result-hero {
+      background: var(--card); border: 2px solid var(--primary);
+      border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+    }
+    .result-top {
+      background: var(--primary); padding: 22px 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    }
+    .result-disease { font-size: 1.6rem; font-weight: 600; color: #fff; }
+    .result-conf {
+      background: rgba(255,255,255,0.2); color: #fff;
+      font-size: 0.9rem; font-weight: 500;
+      padding: 6px 16px; border-radius: 999px; white-space: nowrap;
+    }
+    .result-body { padding: 20px 28px; }
+
+    .doc-box {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 20px; background: var(--amber-lt);
+      border: 1.5px solid var(--amber-bd); border-radius: 12px;
+    }
+    .doc-av {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #fff; border: 1.5px solid var(--amber-bd);
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;
+    }
+    .doc-label { font-size: 0.75rem; color: var(--amber); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
+    .doc-name  { font-size: 1.05rem; font-weight: 600; color: var(--text); }
+
+    .section-title { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+    .top3-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .top3-item {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 14px 18px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .top3-item.first { border-color: var(--primary); background: var(--primary-lt); }
+    .rank {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--border); color: var(--muted);
+      font-size: 0.8rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .top3-item.first .rank { background: var(--primary); color: #fff; }
+    .t3-info { flex: 1; }
+    .t3-name { font-size: 0.97rem; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+    .top3-item.first .t3-name { color: var(--primary); font-weight: 600; }
+    .bar-track { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .bar-fill  { height: 100%; border-radius: 4px; background: var(--border); transition: width 1s ease; }
+    .top3-item.first .bar-fill { background: var(--primary); }
+    .t3-pct { font-size: 0.9rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+    .top3-item.first .t3-pct { color: var(--primary); }
+
+    .disclaimer {
+      background: var(--red-lt); border: 1.5px solid #f5c6c2;
+      border-radius: 12px; padding: 16px 20px;
+      font-size: 0.92rem; color: #7a2020; line-height: 1.7;
+      display: flex; gap: 10px;
+    }
+
+    .error-box {
+      display: none; background: var(--red-lt); border: 1.5px solid #f5c6c2;
+      border-radius: 12px; padding: 14px 18px;
+      color: var(--red); font-size: 0.95rem; margin-bottom: 16px;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🩺</div>
+    <div>
+      <div class="brand-name" id="hTitle">লক্ষণ বিশ্লেষক</div>
+      <div class="brand-sub"  id="hSub">আপনার লক্ষণ বলুন, সঠিক ডাক্তার খুঁজুন</div>
+    </div>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('bn')">বাংলা</button>
+    <button class="lang-btn"        onclick="setLang('en')">English</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="intro">
+    <h1 id="introH">আপনি কেমন অনুভব করছেন?</h1>
+    <p  id="introP">আপনার শরীরের লক্ষণগুলো লিখুন। আমরা সম্ভাব্য রোগ এবং কোন ধরনের ডাক্তারের কাছে যাওয়া উচিত তা জানাবো। এটি কোনো চিকিৎসাগত পরামর্শ নয় — সবসময় ডাক্তারের সাথে পরামর্শ করুন।</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔍 <span id="searchTitle">লক্ষণ খুঁজুন</span></div>
+    <div class="search-wrap">
+      <span class="s-icon">🔎</span>
+      <input type="text" id="symptomSearch" placeholder="লক্ষণ লিখুন (যেমন: জ্বর, মাথাব্যথা, বমি...)" autocomplete="off"/>
+    </div>
+    <div class="dropdown" id="dropdown"></div>
+    <div class="chips" id="chips">
+      <span class="empty-msg" id="emptyMsg">এখনো কোনো লক্ষণ যোগ করা হয়নি</span>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <button class="analyse-btn" id="predictBtn" disabled>
+    <span class="btn-text" id="btnText">লক্ষণ বিশ্লেষণ করুন →</span>
+    <span class="spinner"></span>
+  </button>
+
+  <div class="result-section" id="resultSection">
+    <div class="result-hero">
+      <div class="result-top">
+        <div class="result-disease" id="rDisease"></div>
+        <div class="result-conf"    id="rConf"></div>
+      </div>
+      <div class="result-body">
+        <div class="doc-box">
+          <div class="doc-av">👨‍⚕️</div>
+          <div>
+            <div class="doc-label" id="docLabel">পরামর্শকৃত বিশেষজ্ঞ</div>
+            <div class="doc-name"  id="rDoctor"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section-title" id="top3Title">সম্ভাব্য রোগসমূহ</div>
+    <div class="top3-list" id="top3List"></div>
+    <div class="disclaimer">
+      <span style="font-size:1.1rem;flex-shrink:0">⚠️</span>
+      <span id="disclaimer">এটি কোনো চিকিৎসাগত রোগ নির্ণয় নয়। সঠিক চিকিৎসার জন্য অবশ্যই একজন যোগ্য ডাক্তারের সাথে পরামর্শ করুন।</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+let allSymptoms = [], selected = new Set(), lang = 'bn';
+
+const T = {
+  bn: {
+    hTitle:      'লক্ষণ বিশ্লেষক',
+    hSub:        'আপনার লক্ষণ বলুন, সঠিক ডাক্তার খুঁজুন',
+    introH:      'আপনি কেমন অনুভব করছেন?',
+    introP:      'আপনার শরীরের লক্ষণগুলো লিখুন। আমরা সম্ভাব্য রোগ এবং কোন ধরনের ডাক্তারের কাছে যাওয়া উচিত তা জানাবো। এটি কোনো চিকিৎসাগত পরামর্শ নয় — সবসময় ডাক্তারের সাথে পরামর্শ করুন।',
+    searchTitle: 'লক্ষণ খুঁজুন',
+    placeholder: 'লক্ষণ লিখুন (যেমন: জ্বর, মাথাব্যথা, বমি...)',
+    emptyMsg:    'এখনো কোনো লক্ষণ যোগ করা হয়নি',
+    btnText:     'লক্ষণ বিশ্লেষণ করুন →',
+    docLabel:    'পরামর্শকৃত বিশেষজ্ঞ',
+    top3Title:   'সম্ভাব্য রোগসমূহ',
+    disclaimer:  'এটি কোনো চিকিৎসাগত রোগ নির্ণয় নয়। সঠিক চিকিৎসার জন্য অবশ্যই একজন যোগ্য ডাক্তারের সাথে পরামর্শ করুন।',
+    confText:    pct => `${pct}% নিশ্চিত`,
+    errConn:     'API-এর সাথে সংযোগ করা যাচ্ছে না। পোর্ট 8000-এ সার্ভার চালু আছে কিনা নিশ্চিত করুন।',
+  },
+  en: {
+    hTitle:      'SymptomSense',
+    hSub:        'Describe symptoms, find the right doctor',
+    introH:      'How are you feeling?',
+    introP:      'Select your symptoms and we\'ll suggest the likely condition and which type of doctor to visit. This is not medical advice — always consult a real doctor.',
+    searchTitle: 'Search Symptoms',
+    placeholder: 'Type a symptom (e.g. fever, headache, nausea...)',
+    emptyMsg:    'No symptoms selected yet',
+    btnText:     'Analyse Symptoms →',
+    docLabel:    'Recommended Specialist',
+    top3Title:   'Other Possibilities',
+    disclaimer:  'This is not a medical diagnosis. Please consult a qualified doctor for proper evaluation and treatment.',
+    confText:    pct => `${pct}% confidence`,
+    errConn:     'Cannot connect to API. Make sure the server is running on port 8000.',
+  }
+};
+
+const doctorBn = {
+  'Dermatologist':                     'চর্মরোগ বিশেষজ্ঞ',
+  'Allergist / Immunologist':          'অ্যালার্জি বিশেষজ্ঞ',
+  'Gastroenterologist':                'পাকস্থলী বিশেষজ্ঞ',
+  'General Physician':                 'সাধারণ চিকিৎসক',
+  'Infectious Disease Specialist':     'সংক্রামক রোগ বিশেষজ্ঞ',
+  'Endocrinologist':                   'হরমোন বিশেষজ্ঞ',
+  'Pulmonologist':                     'ফুসফুস বিশেষজ্ঞ',
+  'Cardiologist':                      'হৃদরোগ বিশেষজ্ঞ',
+  'Neurologist':                       'স্নায়ু বিশেষজ্ঞ',
+  'Orthopedist':                       'অর্থোপেডিক বিশেষজ্ঞ',
+  'Hepatologist':                      'যকৃত বিশেষজ্ঞ',
+  'Rheumatologist':                    'বাত বিশেষজ্ঞ',
+  'Rheumatologist / Orthopedist':      'বাত ও অর্থোপেডিক বিশেষজ্ঞ',
+  'Neurologist / ENT Specialist':      'স্নায়ু ও কান-নাক-গলা বিশেষজ্ঞ',
+  'Urologist / General Physician':     'মূত্রনালী বিশেষজ্ঞ',
+  'Vascular Surgeon':                  'রক্তনালী শল্যচিকিৎসক',
+  'Gastroenterologist / Proctologist': 'পাকস্থলী বিশেষজ্ঞ',
+};
+
+function setLang(l) {
+  lang = l;
+  document.documentElement.lang = l;
+  document.body.className = l === 'en' ? 'en' : '';
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const t = T[l];
+  ['hTitle','hSub','introH','introP','searchTitle','emptyMsg','btnText','docLabel','top3Title','disclaimer']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.textContent = t[id]; });
+  document.getElementById('symptomSearch').placeholder = t.placeholder;
+
+  // re-render conf if result is visible
+  const confEl = document.getElementById('rConf');
+  if (confEl.dataset.pct) confEl.textContent = T[l].confText(confEl.dataset.pct);
+
+  // re-render doctor
+  const docEl = document.getElementById('rDoctor');
+  if (docEl.dataset.en) docEl.textContent = l === 'bn' ? (doctorBn[docEl.dataset.en] || docEl.dataset.en) : docEl.dataset.en;
+
+  renderChips();
+}
+
+async function loadSymptoms() {
+  try {
+    const r = await fetch(`${API}/symptoms`);
+    allSymptoms = await r.json();
+  } catch {
+    showError(T[lang].errConn);
+  }
+}
+
+const searchEl   = document.getElementById('symptomSearch');
+const dropdown   = document.getElementById('dropdown');
+const chipsEl    = document.getElementById('chips');
+const predictBtn = document.getElementById('predictBtn');
+const resultSec  = document.getElementById('resultSection');
+
+searchEl.addEventListener('input', () => {
+  const q = searchEl.value.trim().toLowerCase();
+  if (!q) { dropdown.classList.remove('open'); return; }
+  const hits = allSymptoms.filter(s => s.toLowerCase().replace(/_/g,' ').includes(q) && !selected.has(s)).slice(0,10);
+  if (!hits.length) { dropdown.classList.remove('open'); return; }
+  dropdown.innerHTML = hits.map(s =>
+    `<div class="dropdown-item" data-sym="${s}"><span class="d-plus">+</span>${s.replace(/_/g,' ')}</div>`
+  ).join('');
+  dropdown.classList.add('open');
+});
+
+dropdown.addEventListener('click', e => {
+  const item = e.target.closest('.dropdown-item');
+  if (!item) return;
+  selected.add(item.dataset.sym);
+  renderChips();
+  searchEl.value = '';
+  dropdown.classList.remove('open');
+  searchEl.focus();
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap') && !e.target.closest('#dropdown'))
+    dropdown.classList.remove('open');
+});
+
+function renderChips() {
+  if (!selected.size) {
+    chipsEl.innerHTML = `<span class="empty-msg">${T[lang].emptyMsg}</span>`;
+    predictBtn.disabled = true;
+    return;
+  }
+  chipsEl.innerHTML = [...selected].map(s =>
+    `<span class="chip">${s.replace(/_/g,' ')}<button class="chip-x" onclick="removeSym('${s}')">×</button></span>`
+  ).join('');
+  predictBtn.disabled = false;
+}
+
+function removeSym(sym) { selected.delete(sym); renderChips(); }
+
+predictBtn.addEventListener('click', async () => {
+  document.getElementById('errorBox').style.display = 'none';
+  resultSec.style.display = 'none';
+  predictBtn.classList.add('loading');
+  predictBtn.disabled = true;
+  try {
+    const res = await fetch(`${API}/predict`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symptoms: [...selected] }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Prediction failed.');
+    renderResult(data);
+  } catch(err) {
+    showError(err.message);
+  } finally {
+    predictBtn.classList.remove('loading');
+    predictBtn.disabled = false;
+  }
+});
+
+function renderResult({ prediction, top3 }) {
+  document.getElementById('rDisease').textContent = prediction.disease;
+
+  const confEl = document.getElementById('rConf');
+  confEl.dataset.pct = prediction.confidence;
+  confEl.textContent = T[lang].confText(prediction.confidence);
+
+  const docEl = document.getElementById('rDoctor');
+  docEl.dataset.en = prediction.doctor;
+  docEl.textContent = lang === 'bn' ? (doctorBn[prediction.doctor] || prediction.doctor) : prediction.doctor;
+
+  document.getElementById('top3List').innerHTML = top3.map((item, i) => `
+    <div class="top3-item ${i===0?'first':''}">
+      <div class="rank">${i+1}</div>
+      <div class="t3-info">
+        <div class="t3-name">${item.disease}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0" data-w="${item.confidence}%"></div></div>
+      </div>
+      <div class="t3-pct">${item.confidence}%</div>
+    </div>`).join('');
+
+  resultSec.style.display = 'block';
+  requestAnimationFrame(() =>
+    document.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.w)
+  );
+  resultSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+}
+
+loadSymptoms();
+</script>
+</body>
+</html>
